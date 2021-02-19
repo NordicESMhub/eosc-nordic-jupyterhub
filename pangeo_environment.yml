@@ -1,27 +1,14 @@
-name: pangeo
+name: base
 channels:
   - conda-forge
 dependencies:
-  - python>=3.7
-  - nomkl
   # core scipy packages
-  - numpy
-  - scipy
-  - matplotlib-base
-  - pandas
-  - dask
   - xarray
   - sparse
   - sympy
   # data science stuff
-  - scikit-image
-  - scikit-learn
   - dask-ml
-# NOTE: will move these to pangeo-ml image
-#  - tensorflow
-#  - keras
-#  - pytorch-cpu
-  # pyviz
+  - dask-xgboost
   - holoviews
   - panel
   - jupyter-panel-proxy
@@ -34,8 +21,6 @@ dependencies:
   - folium
   - vega
   - vega_datasets
-#  - palettable
-#  - cmocean
   # geospatial
   - iris
   - cartopy
@@ -90,12 +75,7 @@ dependencies:
   - python-wget
   - prefect
   - pyaerocom
-  - ipyparallel
-  - nc-time-axis
-  - pip
-  - cdo
-  - xclim
   - pip:
     - intake_geopandas
-    - git+https://github.com/NCAR/intake-esm.git@master
+    - git+https://github.com/NCAR/intake-esm.git@main
     - git+https://github.com/hhuangwx/cmaps.git#egg=cmaps
