@@ -1,10 +1,7 @@
-# Link to all the dockerfiles which this image is based upon. This provides info about various packages
-# already present in the image. When updating the upstream image tag, remember to update the links as well.
-
-# Minimal: https://github.com/jupyter/docker-stacks/tree/83ed2c63671f/minimal-notebook/Dockerfile
-# Base: https://github.com/jupyter/docker-stacks/tree/83ed2c63671f/base-notebook/Dockerfile
-
 FROM jupyter/scipy-notebook:ubuntu-18.04 as miniconda
+
+USER root
+
 RUN conda config --set channel_priority strict && \
     conda install --quiet --yes --update-all -c conda-forge \
     'nbconvert' \
@@ -38,7 +35,7 @@ RUN conda config --set channel_priority strict && \
 ADD pangeo_environment.yml pangeo_environment.yml
 RUN conda update -n base conda && conda env update --file pangeo_environment.yml && \
     jupyter labextension install @pyviz/jupyterlab_pyviz \
-                             jupyter-leaflet
+                                 jupyter-leaflet 
 
 # Install requirements for eclimate 
 ADD esmvaltool_environment.yml esmvaltool_environment.yml
@@ -46,17 +43,34 @@ ADD esmvaltool_environment.yml esmvaltool_environment.yml
 # Python packages
 RUN conda env create -f esmvaltool_environment.yml && conda clean -yt
 
-USER root
+# Install requirements for eclimate 
+ADD cmor_environment.yml cmor_environment.yml
 
+# Python packages
+RUN conda env create -f cmor_environment.yml && conda clean -yt
+
+ENV CMOR_ROOT=/opt/conda/pkgs/noresm2cmor-3.0.1
 RUN ["/bin/bash" , "-c", ". /opt/conda/etc/profile.d/conda.sh && \
-    conda activate esmvaltool && \
-    /opt/conda/bin/python -m pip install ipykernel && \
-    /opt/conda/bin/ipython kernel install --name esmvaltool && \
-    /opt/conda/bin/python -m ipykernel install --name=esmvaltool && \
-    /opt/conda/bin/jupyter labextension install @jupyterlab/hub-extension && \
-    /opt/conda/bin/jupyter labextension install jupyterlab-datawidgets && \
-    conda deactivate && \
-    conda init bash"]
+    conda activate cmor && \
+    git clone https://github.com/EC-Earth/ece2cmor3.git && \
+    cd ece2cmor3 && \
+    git submodule update --init --recursive && \
+    python setup.py install && \
+    cd .. && rm -rf ece2cmor3 && \
+    cd /opt/conda/pkgs && \
+    wget https://github.com/NordicESMhub/noresm2cmor/archive/v3.0.1.tar.gz --no-check-certificate && \
+    tar zxf v3.0.1.tar.gz && \
+    cd noresm2cmor-3.0.1/build && \
+    make -f Makefile_cmor3.jh_gnu && \
+    make -f Makefile_cmor3mpi.jh_gnu && \
+    rm -rf ../v3.0.1.tar.gz && \
+    rm -rf *.o *.mod && \
+    cp ../bin/noresm2cmor3  ../bin/noresm2cmor3_mpi /opt/conda/envs/cmor/bin/ && \
+    conda deactivate"]
+
+RUN /opt/conda/bin/ipython kernel install --name esmvaltool && \
+    /opt/conda/bin/python -m ipykernel install --name=esmvaltool \
+                          --display-name "ESMValTool" 
 
 FROM jupyter/scipy-notebook:ubuntu-18.04
 
@@ -71,6 +85,7 @@ RUN groupadd -g "$APP_GID" notebook && \
     useradd -m -s /bin/bash -N -u "$APP_UID" -g notebook notebook && \
     usermod -G users notebook && chmod go+rwx -R "$CONDA_DIR/bin"
 COPY --chown=notebook:notebook --from=miniconda $CONDA_DIR $CONDA_DIR
+
 # hadolint ignore=DL3002
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl && \
@@ -78,6 +93,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl && 
     echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /" > /etc/apt/sources.list.d/cuda.list && \
     echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
     rm -rf /var/lib/apt/lists/*
+
 
 # Refer here for versions https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.0/base/Dockerfile,
 # note that this uses Ubuntu 16.04.
@@ -117,7 +133,6 @@ RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
     echo "/usr/local/cuda/lib64" >> /etc/ld.so.conf.d/nvidia.conf && \
     ln -s /usr/local/cuda/include/* /usr/include/
 
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	openssh-client=1:7.6p1-4ubuntu0.3 \
 	less=487-0.1 \
@@ -142,6 +157,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/share/zoneinfo/Europe/Oslo /etc/localtime
 
+RUN mkdir -p /etc/profile.d && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh
+
+    
 ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH} \
     LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH} \
     NVIDIA_VISIBLE_DEVICES="" \

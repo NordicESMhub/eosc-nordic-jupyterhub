@@ -4,6 +4,7 @@ channels:
   - esmvalgroup
 
 dependencies:
+  - ipykernel
   # Python packages that cannot be installed from PyPI:
   - cartopy>=0.18
   - compilers
