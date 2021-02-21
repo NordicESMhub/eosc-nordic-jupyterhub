@@ -86,6 +86,11 @@ RUN groupadd -g "$APP_GID" notebook && \
     usermod -G users notebook && chmod go+rwx -R "$CONDA_DIR/bin"
 COPY --chown=notebook:notebook --from=miniconda $CONDA_DIR $CONDA_DIR
 
+ADD pangeo64x64.png /opt/conda/share/jupyter/kernels/python3/logo-64x64.png 
+RUN chmod 664 /opt/conda/share/jupyter/kernels/python3/logo-64x64.png
+ADD pangeo32x32.png /opt/conda/share/jupyter/kernels/python3/logo-32x32.png 
+RUN chmod 664 /opt/conda/share/jupyter/kernels/python3/logo-32x32.png
+
 # hadolint ignore=DL3002
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl && \
