@@ -35,7 +35,8 @@ RUN conda config --set channel_priority strict && \
 ADD pangeo_environment.yml pangeo_environment.yml
 RUN conda update -n base conda && conda env update --file pangeo_environment.yml && \
     jupyter labextension install @pyviz/jupyterlab_pyviz \
-                                 jupyter-leaflet 
+                                 jupyter-leaflet  \
+                                 jupyter-matplotlib
 
 # Install requirements for eclimate 
 ADD esmvaltool_environment.yml esmvaltool_environment.yml
