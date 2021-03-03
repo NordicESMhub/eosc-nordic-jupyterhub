@@ -44,6 +44,14 @@ ADD esmvaltool_environment.yml esmvaltool_environment.yml
 # Python packages
 RUN conda env create -f esmvaltool_environment.yml && conda clean -yt
 
+RUN ["/bin/bash" , "-c", ". /opt/conda/etc/profile.d/conda.sh && \
+    conda activate esmvaltool && \
+    pip install jill && \
+    jill install --confirm --install_dir=/opt/conda/pkgs/julia-stable \
+                 --symlink_dir=/opt/conda/envs/esmvaltool/bin && \
+    pip install esmvaltool==2.1.0 && \
+    conda deactivate"]
+
 # Install requirements for eclimate 
 ADD cmor_environment.yml cmor_environment.yml
 
