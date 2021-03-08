@@ -16,3 +16,4 @@ dependencies:
   - ncl
   - nco
   - imagemagick
+  - pyke
