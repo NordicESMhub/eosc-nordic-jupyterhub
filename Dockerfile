@@ -46,10 +46,11 @@ RUN conda env create -f esmvaltool_environment.yml && conda clean -yt
 
 RUN ["/bin/bash" , "-c", ". /opt/conda/etc/profile.d/conda.sh && \
     conda activate esmvaltool && \
-    pip install jill && \
-    jill install --confirm --install_dir=/opt/conda/pkgs/julia-stable \
-                 --symlink_dir=/opt/conda/envs/esmvaltool/bin && \
-    pip install esmvaltool==2.1.1 && \
+    mkdir -p /opt/conda/envs/esmvaltool/src && \
+    wget https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.3-linux-x86_64.tar.gz && \
+    tar zxvf julia-1.5.3-linux-x86_64.tar.gz --directory /opt/conda/envs/esmvaltool/src && \
+    ln -s /opt/conda/envs/esmvaltool/src/julia-1.5.3/bin/julia /opt/conda/envs/esmvaltool/bin/julia  && \
+    conda install -c esmvalgroup -c conda-forge esmvaltool==2.1.1 && \
     conda deactivate"]
 
 # Install requirements for eclimate 
