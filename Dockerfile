@@ -10,7 +10,7 @@ RUN conda config --set channel_priority strict && \
     'rise==5.6.*' \
     'nbdime==2.*' \
     'jupyterhub==1.1.0' \
-    'jupyterlab==2.1.*' \
+    'jupyterlab==3.*' \
     'jupyter_contrib_nbextensions==0.5*' \
     'nbgitpuller=0.8' \
     'distributed' \
@@ -21,7 +21,6 @@ RUN conda config --set channel_priority strict && \
     'python-graphviz=0.13' \
     'jupyter-server-proxy==1.4*' && \
     jupyter labextension install \
-    '@jupyterlab/github' \
     'nbdime-jupyterlab' \
     '@jupyterlab/toc' \
     '@jupyterlab/hub-extension' && \
@@ -34,23 +33,23 @@ RUN conda config --set channel_priority strict && \
 
 ADD pangeo_environment.yml pangeo_environment.yml
 RUN conda update -n base conda && conda env update --file pangeo_environment.yml && \
-    jupyter labextension install @pyviz/jupyterlab_pyviz \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager \
                                  jupyter-leaflet  \
                                  jupyter-matplotlib
 
 # Install requirements for eclimate 
 ADD esmvaltool_environment.yml esmvaltool_environment.yml
 
-# Python packages
-RUN conda env create -f esmvaltool_environment.yml && conda clean -yt
+RUN conda create --name esmvaltool
 
 RUN ["/bin/bash" , "-c", ". /opt/conda/etc/profile.d/conda.sh && \
     conda activate esmvaltool && \
     mkdir -p /opt/conda/envs/esmvaltool/src && \
+    mkdir -p /opt/conda/envs/esmvaltool/bin && \
     wget https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.3-linux-x86_64.tar.gz && \
     tar zxvf julia-1.5.3-linux-x86_64.tar.gz --directory /opt/conda/envs/esmvaltool/src && \
     ln -s /opt/conda/envs/esmvaltool/src/julia-1.5.3/bin/julia /opt/conda/envs/esmvaltool/bin/julia  && \
-    conda install -c esmvalgroup -c conda-forge esmvaltool==2.1.1 && \
+    conda env update --file esmvaltool_environment.yml && \
     conda deactivate"]
 
 # Install requirements for eclimate 

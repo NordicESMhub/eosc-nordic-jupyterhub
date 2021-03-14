@@ -81,3 +81,4 @@ dependencies:
     - intake_geopandas
     - git+https://github.com/NCAR/intake-esm.git@main
     - git+https://github.com/hhuangwx/cmaps.git#egg=cmaps
+    - lckr-jupyterlab-variableinspector
