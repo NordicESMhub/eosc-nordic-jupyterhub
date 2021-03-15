@@ -10,7 +10,7 @@ RUN conda config --set channel_priority strict && \
     'rise==5.6.*' \
     'nbdime==2.*' \
     'jupyterhub==1.1.0' \
-    'jupyterlab==3.*' \
+    'jupyterlab==2.1.*' \
     'jupyter_contrib_nbextensions==0.5*' \
     'nbgitpuller=0.8' \
     'distributed' \
